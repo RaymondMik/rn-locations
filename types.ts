@@ -14,7 +14,15 @@ export interface LocationsState {
    items: Location[];
    isLoading: boolean;
    isRefreshing: boolean;
-   hasError: boolean;
+   hasError: string | null;
+};
+
+export interface AuthState {
+   userId: string | null;
+   token: string | null;
+   username: string | null;
+   isLoading: boolean;
+   hasError: string | null;
 };
 
 export interface ModalState {
@@ -35,4 +43,9 @@ export enum LocationScreenStatus {
    View = "view",
    Create = "create",
    Edit = "edit"
+}
+
+export enum AuthStates {
+   SignUp = "signup",
+   SignIn = "signin"
 }

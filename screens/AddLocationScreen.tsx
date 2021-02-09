@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
-import { StyleSheet, Pressable, Text, View, TextInput, Image } from "react-native";
-import { useDispatch } from "react-redux";
+import { StyleSheet, Pressable, Text, View, TextInput, Alert } from "react-native";
+import { useSelector, useDispatch } from "react-redux";
 import { addLocation } from "../store/actions/locations";
 import { Formik } from "formik"; 
 import Colors from "../constants";
@@ -8,13 +8,14 @@ import Colors from "../constants";
 const AddLocationScreen = ({ route, navigation, status }: any) => {
    const formRef: HTMLFormElement = useRef(null);
    const dispatch = useDispatch();
+   const { userId, hasError } = useSelector(state => state.auth);
 
    const saveInput = () => {
       if (formRef.current) {
          if (formRef.current.isValid) {
             dispatch(addLocation(
                {
-                  createdBy: "1111111111",
+                  createdBy: userId,
                   title: formRef.current.values.title,
                   description: formRef.current.values.description,
                   pictures: [
@@ -50,6 +51,7 @@ const AddLocationScreen = ({ route, navigation, status }: any) => {
 
    return (
       <View style={styles.container}>
+         {hasError && Alert.alert("An Error Occurred", hasError, [{ text: 'Okay' }] )}
          <View style={styles.map}>
             <Text>MAP</Text>
          </View>
@@ -91,7 +93,6 @@ const AddLocationScreen = ({ route, navigation, status }: any) => {
             </View>
          )}
          </Formik>
-       
       </View>
    );
 }

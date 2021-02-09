@@ -1,4 +1,4 @@
-import { all, put, takeLatest } from "redux-saga/effects";
+import { all, put, takeLatest, select } from "redux-saga/effects";
 import * as actions from "../actions/locations";
 import { toggleModal } from "../actions/modal"
 import { FIREBASE_URI } from "../../constants";
@@ -6,7 +6,7 @@ import { FIREBASE_URI } from "../../constants";
 import { Location } from "../../types";
 
 function* fetchLocationsSaga() {
-   yield takeLatest(actions.GET_LOCATIONS, function* ({ payload }: any) {
+   yield takeLatest(actions.GET_LOCATIONS, function* () {
       try {
          const response = yield fetch(`${FIREBASE_URI}/locations.json`);
          const resData = yield response.json();
@@ -19,7 +19,7 @@ function* fetchLocationsSaga() {
          }
  
          if (!response.ok) {
-            throw new Error("Server error")
+            throw `A ${response.status} error occured`
          }
 
          yield put(actions.getLocationsSuccess(locations));
@@ -32,8 +32,9 @@ function* fetchLocationsSaga() {
 function* addLocationSaga() {
    yield takeLatest(actions.ADD_LOCATION, function* ({ payload }: any) {
       try {
+         const { token } = yield select(state => state.auth);
          const { location, navigation } = payload;
-         const response = yield fetch(`${FIREBASE_URI}/locations.json`, {
+         const response = yield fetch(`${FIREBASE_URI}/locations.json?auth=${token}`, {
             method: "POST",
             headers: {
                "Content-Type": "application/json"
@@ -42,7 +43,7 @@ function* addLocationSaga() {
          });
 
          if (!response.ok) {
-            throw new Error("Server error")
+            throw `A ${response.status} error occured`
          }
 
          yield all([
@@ -59,9 +60,10 @@ function* addLocationSaga() {
 function* updateLocationSaga() {
    yield takeLatest(actions.UPDATE_LOCATION, function* ({ payload }: any) {
       try {
+         const { token } = yield select(state => state.auth);
          const { location: { _id, title, description }, navigation } = payload;
    
-         const response = yield fetch(`${FIREBASE_URI}/locations/${_id}.json`, {
+         const response = yield fetch(`${FIREBASE_URI}/locations/${_id}.json?auth=${token}`, {
             method: "PATCH",
             headers: {
                "Content-Type": "application/json"
@@ -73,7 +75,7 @@ function* updateLocationSaga() {
          });
 
          if (!response.ok) {
-            throw new Error("Server error")
+            throw `A ${response.status} error occured`
          }
 
          yield all([
@@ -90,14 +92,15 @@ function* updateLocationSaga() {
 
 function* deleteLocationSaga() {
    yield takeLatest(actions.DELETE_LOCATION, function* ({payload}: any) {
-      try {   
+      try {
+         const { token } = yield select(state => state.auth);
          const { location, navigation } = payload;
-         const response = yield fetch(`${FIREBASE_URI}/locations/${location}.json`, {
+         const response = yield fetch(`${FIREBASE_URI}/locations/${location}.json?auth=${token}`, {
             method: "DELETE",
          });
 
          if (!response.ok) {
-            throw new Error("Server error")
+            throw `A ${response.status} error occured`
          }
 
          yield all([
@@ -108,13 +111,13 @@ function* deleteLocationSaga() {
 
          navigation.navigate("Home");
       } catch(error) {
+         console.log(3344, error)
          yield put(actions.deleteLocationFailure(error));
       }
    });
 }
 
-// Sagas that will be called when the store is initialised
-export default function* rootSaga() {
+export default function* locationsSaga() {
    yield all([
       fetchLocationsSaga(),
       addLocationSaga(),

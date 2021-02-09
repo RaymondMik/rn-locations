@@ -1,12 +1,13 @@
 import React, { useRef } from "react";
-import { StyleSheet, Pressable, Text, View, TextInput, Image } from 'react-native';
-import { useDispatch } from "react-redux";
+import { StyleSheet, Pressable, Text, View, TextInput, Image, Alert } from 'react-native';
+import { useSelector, useDispatch } from "react-redux";
 import { Formik } from "formik"; 
 import { updateLocation } from "../store/actions/locations";
 
 const EditLocationScreen = ({ route, navigation }: any) => {
    const formRef: HTMLFormElement = useRef(null);
    const dispatch = useDispatch();
+   const { hasError } = useSelector(state => state.auth);
    const { data } = route.params;
 
    const saveInput = () => {
@@ -44,6 +45,7 @@ const EditLocationScreen = ({ route, navigation }: any) => {
 
    return (
       <View style={styles.container}>
+         {hasError && Alert.alert("An Error Occurred", hasError, [{ text: 'Okay' }] )}
          <Formik
             initialValues={{ title: data.title || "", description: data.description || "" }}
             innerRef={formRef}

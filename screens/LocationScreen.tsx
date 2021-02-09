@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet, Pressable, Platform, Text, View, Image } from 'react-native';
+import React from "react";
+import { StyleSheet, Pressable, Platform, Text, View, Image, Alert } from 'react-native';
 import { useSelector, useDispatch } from "react-redux";
 import { toggleModal } from "../store/actions/modal"
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'; 
@@ -12,12 +12,11 @@ const LocationScreen = ({ route, navigation }: Navigation) => {
    const { data, status } = route.params;
    const modal = useSelector(state => state.modal);
    const { locations } = useSelector(state => state);
+   const { hasError } = useSelector(state => state.auth);
 
    const selectedLocation = locations.items.find((location: any) => location._id === data._id);
 
    const dispatch = useDispatch();
-
-   console.log(5678, locations);
 
    React.useLayoutEffect(() => {
       if (status === LocationScreenStatus.View) {
@@ -33,13 +32,14 @@ const LocationScreen = ({ route, navigation }: Navigation) => {
 
    return (
       <View style={styles.container}>
+         {hasError && Alert.alert("An Error Occurred", hasError, [{ text: 'Okay' }] )}
          <View style={styles.map}>
             <Text>MAP</Text>
          </View>
          <CustomModal show={modal.show} data={selectedLocation} navigation={navigation}/>
          <View style={styles.statusContainer}>
             <View style={styles.status}>
-               {selectedLocation.isOpen ? (
+               {selectedLocation?.isOpen ? (
                   <>
                      <Text style={styles.statusLabel}>To Do</Text>
                      <MaterialCommunityIcons name="check-circle-outline" size={30} color="black" />
@@ -52,7 +52,7 @@ const LocationScreen = ({ route, navigation }: Navigation) => {
                )}
             </View>
             <View style={styles.status}>
-               {selectedLocation.isAssigned ? (
+               {selectedLocation?.isAssigned ? (
                   <>
                      <Text style={styles.statusLabel}>Assigned</Text>
                      <MaterialCommunityIcons name="progress-wrench" size={30} color={Colors.green} />
@@ -65,10 +65,10 @@ const LocationScreen = ({ route, navigation }: Navigation) => {
                )}
             </View>
          </View>
-         <Text style={styles.title}>{selectedLocation.title}</Text>
-         <Text style={{ ...styles.text, textAlign: "justify" }}>{selectedLocation.description}</Text>
+         <Text style={styles.title}>{selectedLocation?.title}</Text>
+         <Text style={{ ...styles.text, textAlign: "justify" }}>{selectedLocation?.description}</Text>
          <View style={styles.picturesContainer}>
-            {selectedLocation && selectedLocation.pictures.map((pictureUrl: string, i: number) => (
+            {selectedLocation && selectedLocation?.pictures.map((pictureUrl: string, i: number) => (
                <Image
                   key={i.toString()}
                   style={styles.picture}

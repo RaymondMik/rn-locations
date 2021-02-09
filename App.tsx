@@ -12,14 +12,15 @@ import { enableScreens } from "react-native-screens";
 import MainScreen from "./screens/MainScreen";
 import FilteredScreen from "./screens/FilteredScreen";
 import locations from "./store/reducers/locations";
+import auth from "./store/reducers/auth";
 import modal from "./store/reducers/modal";
-import locationsSaga from "./store/sagas/locations";
+import rootSaga from "./store/sagas";
 
 import { AntDesign } from '@expo/vector-icons'; 
 
 const sagaMiddleware = createSagaMiddleware();
 
-const rootReducer = combineReducers({ locations, modal });
+const rootReducer = combineReducers({ locations, auth, modal });
 const store = createStore(
   rootReducer,
   composeWithDevTools(
@@ -27,7 +28,7 @@ const store = createStore(
   )
 );
 
-sagaMiddleware.run(locationsSaga)
+sagaMiddleware.run(rootSaga)
 
 enableScreens();
 
@@ -58,23 +59,21 @@ export default function App() {
       <NavigationContainer>
         <Tabs.Navigator>
           <Tabs.Screen
-              name="Home"
-              component={MainScreen}
-              options={{
-              tabBarIcon: ({ color, size }: any) => (
-                <AntDesign name="home" size={size} color={color} />
-              )
-              }}
+            name="Home"
+            component={MainScreen}
+            options={{
+            tabBarIcon: ({ color, size }: any) => (
+              <AntDesign name="home" size={size} color={color} />
+            )}}
           />
           <Tabs.Screen
-              name="Filtered" 
-              component={FilteredScreen}
-              options={{
-              tabBarIcon: ({ color, size }: any) => (
-                <AntDesign name="star" size={size} color={color}/>
-              )
-              }}
-              />
+            name="Filtered" 
+            component={FilteredScreen}
+            options={{
+            tabBarIcon: ({ color, size }: any) => (
+              <AntDesign name="star" size={size} color={color}/>
+            )}}
+          />
         </Tabs.Navigator>
       </NavigationContainer>
     </Provider>

@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, Pressable, Text, View } from 'react-native';
 import Modal from 'react-native-modal';
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { toggleModal } from "../store/actions/modal"
 import Colors from "../constants";
 import { deleteLocation } from "../store/actions/locations";
@@ -9,6 +9,9 @@ import { LocationScreenStatus } from "../types";
 
 const CustomModal = ({ data, navigation, show }: any) => {
    const dispatch = useDispatch();
+   const { userId } = useSelector((state) => state.auth);
+
+   console.log(2222, data, userId);
  
    return (
       <Modal
@@ -17,32 +20,35 @@ const CustomModal = ({ data, navigation, show }: any) => {
          backdropColor={"transparent"}
          onBackdropPress={() => { dispatch(toggleModal()) }}
       >           
-         <View style={styles.centeredView}>
+         <View style={{...styles.centeredView, marginBottom: data.createdBy === userId ? "-55%" : "-100%" }}>
             <View style={styles.modalView}>
+               {data.createdBy === userId && (
+                  <>
+                     <Pressable
+                        style={{...styles.modalButton, borderTopLeftRadius: 10, borderTopRightRadius: 10 }}
+                        onPress={() => {
+                           dispatch(deleteLocation(data._id, navigation));
+                        }}
+                     >
+                        <Text style={{...styles.textStyle, color: Colors.red }}>Delete</Text>
+                     </Pressable>
+                     <Pressable
+                        style={styles.modalButton}
+                        onPress={() => {
+                           navigation.navigate("Edit", {
+                              title: "Edit location",
+                              data: data,
+                              status: LocationScreenStatus.Edit
+                           })
+                           dispatch(toggleModal());
+                        }}
+                     >
+                        <Text style={styles.textStyle}>Edit</Text>
+                     </Pressable>
+                  </>
+               )}
                <Pressable
-                  style={{...styles.modalButton, borderTopLeftRadius: 10, borderTopRightRadius: 10 }}
-                  onPress={() => {
-                     console.log("PIPPO", navigation);
-                     dispatch(deleteLocation(data._id, navigation));
-                  }}
-               >
-                  <Text style={{...styles.textStyle, color: Colors.red }}>Delete</Text>
-               </Pressable>
-               <Pressable
-                  style={styles.modalButton}
-                  onPress={() => {
-                     navigation.navigate("Edit", {
-                        title: "Edit location",
-                        data: data,
-                        status: LocationScreenStatus.Edit
-                     })
-                     dispatch(toggleModal());
-                  }}
-               >
-                  <Text style={styles.textStyle}>Edit</Text>
-               </Pressable>
-               <Pressable
-                  style={styles.modalButton}
+                  style={{...styles.modalButton,  ...(data.createdBy !== userId && { ...styles.firstButton }) }}
                   onPress={() => {
                      dispatch(toggleModal());
                   }}
@@ -75,8 +81,7 @@ const styles = StyleSheet.create({
    centeredView: {
       flex: 1,
       justifyContent: "flex-end",
-      alignItems: "center",
-      marginBottom: "-55%"
+      alignItems: "center"
    },
    modalView: {
       width: "100%",
@@ -101,6 +106,10 @@ const styles = StyleSheet.create({
       borderBottomColor: "#555",
       borderBottomWidth: 1,
       backgroundColor: "rgba(0,0,0,0.9)",
+   },
+   firstButton: {
+      borderTopLeftRadius: 10,
+      borderTopRightRadius: 10
    },
    textStyle: {
       color: "white",

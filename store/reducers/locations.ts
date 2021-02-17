@@ -1,4 +1,4 @@
-import { LocationsState, Location } from "../../types";
+import { LocationsState, UserGPSLocation } from "../../types";
 import * as actions from "../actions/locations";
 
 const initialState: LocationsState = {
@@ -6,6 +6,7 @@ const initialState: LocationsState = {
    isLoading: false,
    isRefreshing: false,
    hasError: null,
+   userGPSLocation: null
 };
 
 const locationsReducer = (state: LocationsState = initialState, action: any) => {
@@ -95,6 +96,11 @@ const locationsReducer = (state: LocationsState = initialState, action: any) => 
             isRefreshing: false,
             hasError: action.payload
          };
+      case actions.SET_USER_GPS_LOCATION:
+         return {
+            ...state,
+            userGPSLocation: action.payload
+         }
       default:
          return state;
    }

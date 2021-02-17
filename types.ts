@@ -10,11 +10,25 @@ export interface Location {
    isOpen: boolean;
 };
 
+export interface UserGPSLocation {
+   coords: {
+      accuracy: number | null;
+      altitude: number | null;
+      altitudeAccuracy: number | null;
+      heading: number | null;
+      latitude: number | null;
+      longitude: number | null;
+      speed: number | null;
+    };
+    timestamp: number | null;
+}
+
 export interface LocationsState {
    items: Location[];
    isLoading: boolean;
    isRefreshing: boolean;
    hasError: string | null;
+   userGPSLocation: userGPSLocation | null;
 };
 
 export interface AuthState {
@@ -23,6 +37,7 @@ export interface AuthState {
    username: string | null;
    isLoading: boolean;
    hasError: string | null;
+   expiryDate: number | null;
 };
 
 export interface ModalState {
@@ -32,7 +47,7 @@ export interface ModalState {
 export interface Navigation {
    route: any,
    navigation: {
-      navigate: (route: string, params: any) => void,
+      navigate: (route: string, params?: any) => void,
       setOptions: (params: any) => void,
       setParams: (params: any) => void,
       addListener: (type: string, params: () => void) => void,

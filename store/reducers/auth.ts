@@ -6,7 +6,8 @@ const initialState: AuthState = {
    userId: null,
    username: null,
    isLoading: false,
-   hasError: null
+   hasError: null,
+   expiryDate: null
 }
 
 const auth = (state = initialState, action: any) => {
@@ -35,6 +36,8 @@ const auth = (state = initialState, action: any) => {
             isLoading: false,
             hasError: action.payload
          }
+      case actions.AUTHENTICATE_LOGOUT:
+         return initialState;
       default:
          return state;
    }

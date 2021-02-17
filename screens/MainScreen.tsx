@@ -7,6 +7,7 @@ import LocationScreen from "../screens/LocationScreen";
 import AddLocationScreen from "../screens/AddLocationScreen";
 import EditLocationScreen from "../screens/EditLocationScreen";
 import AuthScreen from "./AuthScreen";
+import StartUpScreen from "./StartUpScreen";
 import Colors from "../constants";
 
 const HomeStack = createStackNavigator();
@@ -75,6 +76,10 @@ const MainScreen = () => {
             </>
          ) : (
             <>
+               <HomeStack.Screen 
+                  name="StartUp"
+                  component={StartUpScreen}
+               />
                <HomeStack.Screen 
                   name="Authenticate"
                   component={AuthScreen}

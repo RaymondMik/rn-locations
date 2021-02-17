@@ -1,9 +1,28 @@
-import { all, put, takeLatest } from "redux-saga/effects";
+import { all, delay, put, takeLatest, takeEvery } from "redux-saga/effects";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as actions from "../actions/auth";
-import { FIREBASE_SIGNUP_URI, FIREBASE_SIGNIN_URI } from "../../constants";
+import { FIREBASE_SIGNUP_URI, FIREBASE_SIGNIN_URI, ASYNC_STORAGE_USER_DATA_KEY } from "../../constants";
 import { FIREBASE_API_KEY } from "../../secrets";
-
 import { AuthStates } from "../../types";
+
+const saveDataToStorage = (token: string, userId: string, username: string, expiryDate: number): void => {
+   AsyncStorage.setItem(
+      ASYNC_STORAGE_USER_DATA_KEY,
+      JSON.stringify({
+         token,
+         userId,
+         username,
+         expiryDate: String(expiryDate)
+   }));
+};
+
+function* tokenTimeoutWatcher() {
+   yield takeEvery(actions.SET_TOKEN_TIMEOUT, function* ({ payload }: any) {
+      yield delay(payload);
+      AsyncStorage.removeItem(ASYNC_STORAGE_USER_DATA_KEY);
+      yield put(actions.authenticateLogout());    
+   });
+}
 
 function* createUserSaga() {
    yield takeLatest(actions.AUTHENTICATE, function* ({ payload }: any) {
@@ -30,8 +49,6 @@ function* createUserSaga() {
             body: JSON.stringify(apiPayload)
          });
 
-         console.log(2222, response);
-
          if (!response.ok) {
             const errorResData = yield response.json();
             const errorId = errorResData.error.message;
@@ -50,7 +67,18 @@ function* createUserSaga() {
 
          const resData = yield response.json();
 
-         yield put(actions.authenticateSuccess({ userId: resData.localId, token: resData.idToken, username: resData.displayName }));
+         const expiryDate: number = new Date().getTime() + parseInt(resData.expiresIn) * 1000;
+
+         yield put(actions.authenticateSuccess({ 
+            userId: resData.localId,
+            token: resData.idToken,
+            username: resData.displayName,
+            expiryDate: parseInt(resData.expiresIn) * 1000,
+         }));
+
+         saveDataToStorage(resData.idToken, resData.localId, resData.displayName, expiryDate);
+
+         yield put(actions.setTokenTimeout(parseInt(resData.expiresIn) * 1000));
       } catch(error) {
          yield put(actions.authenticateFailure(error));
       }
@@ -59,6 +87,7 @@ function* createUserSaga() {
 
 export default function* authSaga() {
    yield all([
-      createUserSaga()
+      createUserSaga(),
+      tokenTimeoutWatcher()
    ]);
 }

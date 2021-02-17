@@ -1,4 +1,4 @@
-import { Location } from "../../types";
+import { Location, UserGPSLocation } from "../../types";
 
 export const GET_LOCATIONS: string = "GET_LOCATIONS";
 export const GET_LOCATIONS_SUCCESS: string = "GET_LOCATIONS_SUCCESS";
@@ -15,6 +15,8 @@ export const UPDATE_LOCATION_FAILURE: string = "UPDATE_LOCATION_FAILURE";
 export const DELETE_LOCATION: string = "DELETE_LOCATION";
 export const DELETE_LOCATION_SUCCESS: string = "DELETE_LOCATION_SUCCESS";
 export const DELETE_LOCATION_FAILURE: string = "DELETE_LOCATION_FAILURE";
+
+export const SET_USER_GPS_LOCATION: string = "SET_USER_GPS_LOCATION";
 
 export const getLocations = (refresh?: boolean) => ({
    type: GET_LOCATIONS,
@@ -81,3 +83,9 @@ export const deleteLocationFailure = (payload: string) => ({
    type: DELETE_LOCATION_FAILURE,
    payload
 });
+
+export const setUserGPSLocation = (payload: UserGPSLocation) => ({
+   type: SET_USER_GPS_LOCATION,
+   payload
+});
+

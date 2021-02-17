@@ -1,19 +1,31 @@
 export const AUTHENTICATE: string = "AUTHENTICATE";
 export const AUTHENTICATE_SUCCESS: string = "AUTHENTICATE_SUCCESS";
 export const AUTHENTICATE_FAILURE: string = "AUTHENTICATE_FAILURE";
+export const AUTHENTICATE_LOGOUT: string = "AUTHENTICATE_LOGOUT";
+export const SET_TOKEN_TIMEOUT: string = "SET_TOKEN_TIMEOUT";
 
 export const authenticate = (payload: any) => ({
    type: AUTHENTICATE,
    payload
 });
 
-export const authenticateSuccess = (payload: any) => ({
-   type: AUTHENTICATE_SUCCESS,
-   payload
-});
+export const authenticateSuccess = (payload: any) => {
+   return {
+      type: AUTHENTICATE_SUCCESS,
+      payload
+   };
+};
 
 export const authenticateFailure = (payload: any) => ({
    type: AUTHENTICATE_FAILURE,
    payload
 });
 
+export const authenticateLogout = () => ({
+   type: AUTHENTICATE_LOGOUT
+});
+
+export const setTokenTimeout = (payload: number) => ({
+   type: SET_TOKEN_TIMEOUT,
+   payload
+});

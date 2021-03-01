@@ -1,78 +1,89 @@
-import React, { useState, useRef } from "react";
-import { StyleSheet, Pressable, Text, View, TextInput, Alert } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { StyleSheet, Pressable, Text, View, TextInput, Alert, ActivityIndicator } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { Formik } from "formik"; 
-// import * as FileSystem from "expo-file-system";
-import { addLocation } from "../store/actions/locations";
+import { Formik, Field } from "formik";
+import * as yup from "yup";
+import MapView from 'react-native-maps';
+import * as Permissions from "expo-permissions";
+import * as LocationPicker from "expo-location";
+import { addLocation, addNotificationToken } from "../store/actions/locations";
 import ImageHandler from "../components/ImageHandler";
-import MapPreview from "../components/MapPreview";
-import Colors from "../constants";
-import firebase from "firebase";
-import firebaseConfig from "../firebase";
+import CustomInput from "../components/CustomInput";
+import Colors, { FALLBACK_LOCATION } from "../constants";
+import { UserGPSLocation } from "../types";
+import { registerForPushNotificationsAsync } from "../utils";
 
-const uploadAsFile = async (uri: any, userId: string) => {
-   firebase.initializeApp(firebaseConfig);
-   const response = await fetch(uri);
-   const blob = await response.blob();
- 
-   const metadata = {
-     contentType: "image/jpeg",
-   };
- 
-   let name = new Date().getTime() + "-media.jpg"
-   const ref = firebase
-     .storage()
-     .ref()
-     .child(`${userId}/` + name)
- 
-   const task = ref.put(blob, metadata);
-
-   return new Promise((resolve, reject) => {
-      task.on("state_changed", 
-         (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            console.log("Upload is " + progress + "% done");
-         }, (err) => {
-            reject(err)
-         }, () => {
-            // gets the download url then sets the image from firebase as the value for the imgUrl key:
-            firebase
-               .storage()
-               .ref()
-               .child(`${userId}/` + name).getDownloadURL()
-               .then(fireBaseUrl => {
-                  resolve(fireBaseUrl)
-               })
-         })
-      });
- }
+const addLocationValidationSchema = yup.object().shape({
+   title: yup
+      .string()
+      .min(4, ({ min }) => `Title must be at least ${min} characters`)
+      .required("Title is Required"),
+   description: yup
+      .string()
+      .min(4, ({ min }) => `Description must be at least ${min} characters`)
+      .required("Password is required"),
+})
 
 const AddLocationScreen = ({ navigation }: any) => {
+   const [currentLocation, setCurrentLocation] = useState<UserGPSLocation | null>(null);
+   const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
+   const [locationHasErrored, setLocationHasErrored] = useState<boolean>(false);
+
    const [image, setImage] = useState<any>(null);
    const dispatch = useDispatch();
 
    const formRef: HTMLFormElement = useRef(null);
-   const { userId, hasError } = useSelector(state => state.auth);
+   const { userId, hasError: authError } = useSelector(state => state.auth);
+   const { isLoading, hasPhotoError, notificationToken } = useSelector(state => state.locations);
 
-   console.log(879, image);
+   useEffect(() => {
+      (async () => {
+         try {
+            const { status } = await Permissions.askAsync(Permissions.LOCATION);
+
+            if (status !== 'granted') {
+               new Error("no permissions")
+            }
+
+            const location = await LocationPicker.getCurrentPositionAsync({});
+            const notificationToken = await registerForPushNotificationsAsync();
+
+            if (notificationToken) {
+               console.log(222, notificationToken);
+               dispatch(addNotificationToken(notificationToken));
+            }
+            
+            setCurrentLocation(location);
+            setIsLoadingLocation(false);
+         } catch (err) {
+            setLocationHasErrored(true);
+         }
+      })();
+
+      return () => {
+         setCurrentLocation(null);
+         setIsLoadingLocation(false);
+         setLocationHasErrored(false);
+      }
+    }, []);
 
    const saveInput = async() => {
-      console.log(890, image);
       if (formRef?.current?.isValid && image) { 
-         const imageURL = await uploadAsFile(image, userId);
-
          dispatch(
-            addLocation({
-               createdBy: userId,
-               title: formRef.current.values.title,
-               description: formRef.current.values.description,
-               pictures: [imageURL],
-               latitude: "23.89898989898",
-               longitude: "26.9090909090",
-               isAssigned: false,
-               isOpen: true
-            },
-            navigation
+            addLocation(
+               {
+                  createdBy: userId,
+                  title: formRef.current.values.title,
+                  description: formRef.current.values.description,
+                  pictures: [],
+                  latitude: currentLocation?.coords?.latitude.toString(),
+                  longitude: currentLocation?.coords?.longitude.toString(),
+                  assignedTo: "",
+                  isOpen: true,
+                  notificationToken
+               },
+               image,
+               navigation
          ));
       }
    };
@@ -95,36 +106,57 @@ const AddLocationScreen = ({ navigation }: any) => {
 
    return (
       <View style={styles.container}>
-         {hasError && Alert.alert("An Error Occurred", hasError, [{ text: 'Okay' }] )}
-         <View>
-            <MapPreview />
+         {authError && Alert.alert("An Error Occurred", authError, [{ text: 'Okay' }] )}
+         {hasPhotoError && Alert.alert("An error occurred while uploading your photo", hasPhotoError, [{ text: 'Okay' }] )}
+         <View style={styles.map}>
+            {locationHasErrored ? (
+               <Text>We couldn't fetch your location</Text>
+            ) : ( isLoadingLocation ? (
+               <ActivityIndicator size="small" color="black" style={{ marginTop: 20 }} />
+            ) : (
+               <MapView
+                  style={styles.map}
+                  mapType={"satellite"}
+                  showsUserLocation
+                  region={{
+                     latitude: currentLocation?.coords?.latitude || FALLBACK_LOCATION.coords.latitude,
+                     longitude: currentLocation?.coords?.longitude || FALLBACK_LOCATION.coords.longitude,
+                     latitudeDelta: 0.0911,
+                     longitudeDelta: 0.0421
+                  }}
+                  onPress={() => { console.log("HELLO MAP WORLD") }}
+               />
+            ))}
          </View>
-         <Formik
-            initialValues={{ title: "", description: "", picture: "" }}
-            innerRef={formRef}
-         >
-         {({ handleChange, handleBlur, values }) => (
-            <View style={styles.formContainer}>
-               <Text>Title</Text>
-               <TextInput
-                  style={styles.textInput}
-                  onChangeText={handleChange("title")}
-                  onBlur={handleBlur("title")}
-                  value={values.title}
-               />
-               <Text>Description</Text>
-               <TextInput
-                  style={styles.textInput}
-                  onChangeText={handleChange("description")}
-                  onBlur={handleBlur("description")}
-                  value={values.description}
-               />
-               <View style={styles.imagePreviewContainer}>
-                  <ImageHandler setImage={setImage} />
+         {isLoading ? (
+            <ActivityIndicator size="small" color="black" style={{ marginTop: 20 }} />
+         ) : (
+            <Formik
+               validationSchema={addLocationValidationSchema}
+               initialValues={{ title: "", description: "", picture: "" }}
+               innerRef={formRef}
+            >
+            {() => (
+               <View style={styles.formContainer}>
+               <Field
+                     component={CustomInput}
+                     label="Title"
+                     name="title"
+                     placeholder="Add a title which help other to remember this location"
+                  />
+                  <Field
+                     component={CustomInput}
+                     label="Description"
+                     name="description"
+                     placeholder="Add a helpful description here"
+                  />
+                  <View style={styles.imagePreviewContainer}>
+                     <ImageHandler setImage={setImage} />
+                  </View>
                </View>
-            </View>
+            )}
+            </Formik>
          )}
-         </Formik>
       </View>
    );
 }
@@ -132,34 +164,16 @@ const AddLocationScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
    container: {
       flex: 1,
-      width: "100%",
-      height: "100%",
       alignItems: "center",
       justifyContent: "flex-start",
-      padding: 15
    },
    map: {
       width: "100%",
-      height: 200,
-      borderWidth: 1,
-      borderColor: "black"
-   },
-   statusContainer: {
-      width: "100%",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginTop: 10
-   },
-   status: {
-      flexDirection: "row",
-      alignItems: "center",
-   },
-   statusLabel: {
-      marginRight: 5
+      height: 300
    },
    formContainer: {
       width: "100%",
-      marginTop: 20
+      padding: 15
    },
    textInput: {
       width: "100%",
@@ -179,9 +193,6 @@ const styles = StyleSheet.create({
       marginTop: 20
    },
    imagePreviewContainer: {
-      // flexDirection: "row",
-      // flexWrap: "wrap",
-      // justifyContent: "space-around",
       marginTop: 20
    },
    picture: {

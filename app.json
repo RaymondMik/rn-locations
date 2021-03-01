@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "rn-locations",
+    "name": "Trash Busters",
     "slug": "rn-locations",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/locations_icon.png",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/locations_splash_icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#171717"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -17,13 +17,22 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "dev.emerald-river.trash-busters",
+      "buildNumber": "0.1.0",
       "supportsTablet": true
     },
     "android": {
+      "package": "dev.emerald_river.trash_busters",
+      "versionCode": 0,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
-      }
+        "foregroundImage": "./assets/locations_adaptive.png",
+        "backgroundColor": "#171717"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "CAMERA"
+      ],
+      "useNextNotificationsApi": true
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -57,17 +57,26 @@ export default function App() {
   return (
     <Provider store={store}>
       <NavigationContainer>
-        <Tabs.Navigator>
+        <Tabs.Navigator
+          tabBarOptions={{
+            style: {
+              backgroundColor: "rgba(0,0,0,0.5)",
+              position: "absolute",
+              borderTopWidth: 0,
+              elevation: 0,
+            },
+          }}>
           <Tabs.Screen
             name="Home"
             component={MainScreen}
             options={{
             tabBarIcon: ({ color, size }: any) => (
               <AntDesign name="home" size={size} color={color} />
-            )}}
+            )
+          }}
           />
           <Tabs.Screen
-            name="Filtered" 
+            name="Filtered"
             component={FilteredScreen}
             options={{
             tabBarIcon: ({ color, size }: any) => (

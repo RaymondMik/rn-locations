@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Platform, Alert, Text, View, StyleSheet } from "react-native";
 import * as LocationPicker from "expo-location";
-import * as Permissions from 'expo-permissions';
+import * as Permissions from "expo-permissions";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserGPSLocation } from "../store/actions/locations";
 import { UserGPSLocation } from "../types";
@@ -29,15 +29,12 @@ const LocationHandler = () => {
     (async () => {
       const { status } = await Permissions.askAsync(Permissions.LOCATION);
 
-      console.log(8888, status);
-
       if (status !== "granted") {
         setErrorMsg("Permission to access location was denied");
         return;
       }
    
       const location: any = await LocationPicker.getCurrentPositionAsync({});
-      console.log(222, location);
       
       dispatch(setUserGPSLocation(location))
     })();

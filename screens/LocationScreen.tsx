@@ -3,16 +3,18 @@ import { StyleSheet, Pressable, Platform, Text, View, Image, Alert } from 'react
 import { useSelector, useDispatch } from "react-redux";
 import { toggleModal } from "../store/actions/modal"
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'; 
-
+import MapView, { Marker } from 'react-native-maps';
 import { Navigation, LocationScreenStatus } from "../types";
 import CustomModal from "../components/CustomModal";
-import Colors from "../constants";
+import Colors, { FALLBACK_LOCATION } from "../constants";
 
 const LocationScreen = ({ route, navigation }: Navigation) => {
    const { data, status } = route.params;
    const modal = useSelector(state => state.modal);
    const { locations } = useSelector(state => state);
    const { hasError } = useSelector(state => state.auth);
+
+   const { items, userGPSLocation, isLoading } = locations;
 
    const selectedLocation = locations.items.find((location: any) => location._id === data._id);
 
@@ -34,49 +36,73 @@ const LocationScreen = ({ route, navigation }: Navigation) => {
       <View style={styles.container}>
          {hasError && Alert.alert("An Error Occurred", hasError, [{ text: 'Okay' }] )}
          <View style={styles.map}>
-            <Text>MAP</Text>
-         </View>
-         <CustomModal show={modal.show} data={selectedLocation} navigation={navigation}/>
-         <View style={styles.statusContainer}>
-            <View style={styles.status}>
-               {selectedLocation?.isOpen ? (
-                  <>
-                     <Text style={styles.statusLabel}>To Do</Text>
-                     <MaterialCommunityIcons name="check-circle-outline" size={30} color="black" />
-                  </>
-               ) : (
-                  <>
-                     <Text style={styles.statusLabel}>Done</Text>
-                     <MaterialCommunityIcons name="check-circle" size={30} color={Colors.green} />
-                  </>
+            <MapView
+               style={styles.map}
+               mapType={"satellite"}
+               showsUserLocation
+               region={{
+                  latitude: Number(selectedLocation.latitude) || FALLBACK_LOCATION.coords.latitude,
+                  longitude: Number(selectedLocation.longitude) || FALLBACK_LOCATION.coords.longitude,
+                  latitudeDelta: 0.0911,
+                  longitudeDelta: 0.0421
+               }}
+               onPress={() => { console.log("HELLO MAP WORLD") }}
+            >
+               <Marker
+                  key={selectedLocation._id}
+                  title={selectedLocation.title}
+                  coordinate={{
+                     latitude: Number(selectedLocation.latitude),
+                     longitude: Number(selectedLocation.longitude),
+                  }}
+               >
+                  <AntDesign name="enviroment" size={34} color={Colors.red} />
+               </Marker>
+            </MapView>
+            </View>
+            <CustomModal show={modal.show} data={selectedLocation} navigation={navigation}/>
+            <View style={styles.statusContainer}>
+               <View style={styles.status}>
+                  {selectedLocation?.isOpen ? (
+                     <>
+                        <Text style={styles.statusLabel}>To Do</Text>
+                        <MaterialCommunityIcons name="check-circle-outline" size={40} color="orange" />
+                     </>
+                  ) : (
+                     <>
+                        <Text style={styles.statusLabel}>Done</Text>
+                        <MaterialCommunityIcons name="check-circle" size={40} color={Colors.green} />
+                     </>
+                  )}
+               </View>
+               {selectedLocation?.isOpen && (
+                  <View style={styles.status}>
+                     {selectedLocation?.assignedTo.length && selectedLocation?.isOpen ? (
+                        <>
+                           <Text style={styles.statusLabel}>Assigned</Text>
+                           <MaterialCommunityIcons name="progress-wrench" size={40} color={Colors.green} />
+                        </>
+                     ): (
+                        <>
+                           <Text style={styles.statusLabel}>Unassigned</Text>
+                           <MaterialCommunityIcons name="progress-check" size={40} color="orange" />
+                        </>
+                     )}
+                  </View>
                )}
             </View>
-            <View style={styles.status}>
-               {selectedLocation?.isAssigned ? (
-                  <>
-                     <Text style={styles.statusLabel}>Assigned</Text>
-                     <MaterialCommunityIcons name="progress-wrench" size={30} color={Colors.green} />
-                  </>
-               ): (
-                  <>
-                     <Text style={styles.statusLabel}>Unassigned</Text>
-                     <MaterialCommunityIcons name="progress-check" size={30} color={Colors.green} />
-                  </>
-               )}
+            <Text style={styles.title}>{selectedLocation?.title}</Text>
+            <Text style={{ ...styles.text, textAlign: "justify" }}>{selectedLocation?.description}</Text>
+            <View style={styles.picturesContainer}>
+               {selectedLocation && selectedLocation?.pictures.map((pictureUrl: string, i: number) => (
+                  <Image
+                     key={i.toString()}
+                     style={styles.picture}
+                     source={{ uri: pictureUrl }}
+                     resizeMethod={"resize"}
+                  />
+               ))}
             </View>
-         </View>
-         <Text style={styles.title}>{selectedLocation?.title}</Text>
-         <Text style={{ ...styles.text, textAlign: "justify" }}>{selectedLocation?.description}</Text>
-         <View style={styles.picturesContainer}>
-            {selectedLocation && selectedLocation?.pictures.map((pictureUrl: string, i: number) => (
-               <Image
-                  key={i.toString()}
-                  style={styles.picture}
-                  source={{ uri: pictureUrl }}
-                  resizeMethod={"resize"}
-               />
-            ))}
-         </View>
       </View>
    );
 }
@@ -88,26 +114,25 @@ const styles = StyleSheet.create({
       height: "100%",
       alignItems: "center",
       justifyContent: "flex-start",
-      padding: 15
    },
    map: {
       width: "100%",
-      height: 200,
-      borderWidth: 1,
-      borderColor: "black"
+      height: 300,
    },
    statusContainer: {
       width: "100%",
       flexDirection: "row",
       justifyContent: "space-between",
-      marginTop: 10
+      marginTop: 10,
+      paddingHorizontal: 20
    },
    status: {
       flexDirection: "row",
       alignItems: "center",
    },
    statusLabel: {
-      marginRight: 5
+      marginRight: 5,
+      fontWeight: "bold"
    },
    formContainer: {
       width: "100%",

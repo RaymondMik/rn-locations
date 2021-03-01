@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Platform } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useSelector } from "react-redux";
+import Constants from "expo-constants";
+import * as Notifications from "expo-notifications";
 import LocationsListScreen from "../screens/LocationsListScreen";
 import LocationScreen from "../screens/LocationScreen";
 import AddLocationScreen from "../screens/AddLocationScreen";
@@ -11,7 +13,15 @@ import StartUpScreen from "./StartUpScreen";
 import Colors from "../constants";
 
 const HomeStack = createStackNavigator();
-const isSignedIn = false;
+
+Notifications.setNotificationHandler({
+   handleNotification: async () => ({
+     shouldShowAlert: true,
+     shouldPlaySound: true,
+     shouldSetBadge: false,
+   }),
+ });
+
 
 const MainScreen = () => {
    const { token } = useSelector(state => state.auth);
@@ -25,12 +35,13 @@ const MainScreen = () => {
                   component={LocationsListScreen}
                   options={{
                      title: "Locations",
+                     headerTransparent: true,
                      headerStyle: {
-                     backgroundColor: Platform.OS === "android" ? Colors.headerColor : "#fff",
+                        // backgroundColor: Platform.OS === "android" ? Colors.headerColor : "rgba(0,0,0,0.8)",
                      },
-                     headerTintColor: Platform.OS === "android" ? Colors.whiteText : "#000",
+                     headerTintColor: Platform.OS === "android" ? Colors.whiteText : "#fff",
                      headerTitleStyle: {
-                     fontWeight: "bold",
+                        fontWeight: "bold",
                      },
                   }}
                />
@@ -39,7 +50,7 @@ const MainScreen = () => {
                   component={LocationScreen}
                   options={{
                      headerStyle: {
-                     backgroundColor: Platform.OS === "android" ? Colors.headerColor : "#fff",
+                        backgroundColor: Platform.OS === "android" ? Colors.headerColor : "#fff",
                      },
                      headerTintColor: Platform.OS === "android" ? Colors.whiteText : "#000",
                      headerTitleStyle: {

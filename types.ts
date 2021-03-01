@@ -6,8 +6,9 @@ export interface Location {
    pictures: any[];
    latitude: string;
    longitude: string;
-   isAssigned: boolean;
+   assignedTo: string | null;
    isOpen: boolean;
+   notificationToken: string | null;
 };
 
 export interface UserGPSLocation {
@@ -16,8 +17,8 @@ export interface UserGPSLocation {
       altitude: number | null;
       altitudeAccuracy: number | null;
       heading: number | null;
-      latitude: number | null;
-      longitude: number | null;
+      latitude: number;
+      longitude: number;
       speed: number | null;
     };
     timestamp: number | null;
@@ -28,7 +29,9 @@ export interface LocationsState {
    isLoading: boolean;
    isRefreshing: boolean;
    hasError: string | null;
-   userGPSLocation: userGPSLocation | null;
+   hasPhotoError: string | null;
+   userGPSLocation: UserGPSLocation | null;
+   notificationToken: string | null;
 };
 
 export interface AuthState {

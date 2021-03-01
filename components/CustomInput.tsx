@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
   textInput: {
     paddingHorizontal: 2,
     paddingVertical: 5,
+    marginBottom: 5,
     borderBottomColor: "#ccc",
     color: "black",
     borderBottomWidth: 1

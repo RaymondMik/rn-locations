@@ -8,6 +8,10 @@ export const ADD_LOCATION: string = "ADD_LOCATION";
 export const ADD_LOCATION_SUCCESS: string = "ADD_LOCATION_SUCCESS";
 export const ADD_LOCATION_FAILURE: string = "ADD_LOCATION_FAILURE";
 
+export const ADD_LOCATION_PHOTO: string = "ADD_LOCATION_PHOTO";
+export const ADD_LOCATION_PHOTO_SUCCESS: string = "ADD_LOCATION_PHOTO_SUCCESS";
+export const ADD_LOCATION_PHOTO_FAILURE: string = "ADD_LOCATION_PHOTO_FAILURE";
+
 export const UPDATE_LOCATION: string = "UPDATE_LOCATION";
 export const UPDATE_LOCATION_SUCCESS: string = "UPDATE_LOCATION_SUCCESS"; 
 export const UPDATE_LOCATION_FAILURE: string = "UPDATE_LOCATION_FAILURE";
@@ -16,7 +20,17 @@ export const DELETE_LOCATION: string = "DELETE_LOCATION";
 export const DELETE_LOCATION_SUCCESS: string = "DELETE_LOCATION_SUCCESS";
 export const DELETE_LOCATION_FAILURE: string = "DELETE_LOCATION_FAILURE";
 
+export const ASSIGN_LOCATION: string = "ASSIGN_LOCATION";
+export const ASSIGN_LOCATION_SUCCESS: string = "ASSIGN_LOCATION_SUCCESS";
+export const ASSIGN_LOCATION_FAILURE: string = "ASSIGN_LOCATION_FAILURE";
+
+export const MARK_LOCATION_AS_DONE: string = "MARK_LOCATION_AS_DONE";
+export const MARK_LOCATION_AS_DONE_SUCCESS: string = "MARK_LOCATION_AS_DONE_SUCCESS";
+export const MARK_LOCATION_AS_DONE_FAILURE: string = "MARK_LOCATION_AS_DONE_FAILURE";
+
 export const SET_USER_GPS_LOCATION: string = "SET_USER_GPS_LOCATION";
+
+export const ADD_NOTIFICATION_TOKEN: string = "ADD_NOTIFICATION_TOKEN";
 
 export const getLocations = (refresh?: boolean) => ({
    type: GET_LOCATIONS,
@@ -33,10 +47,11 @@ export const getLocationsFailure = (payload: string) => ({
    payload
 });
 
-export const addLocation = (location: any, navigation: any) => ({
+export const addLocation = (location: any, image: any, navigation: any) => ({
    type: ADD_LOCATION,
    payload: {
       location,
+      image,
       navigation
    }
 });
@@ -50,7 +65,16 @@ export const addLocationFailure = (payload: string) => ({
    payload
 });
 
-export const updateLocation = (location: any, navigation: any) => ({
+export const addLocationPhoto = () => ({
+   type: ADD_LOCATION_PHOTO,
+});
+
+export const addLocationPhotoFailure = (payload: string) => ({
+   type: ADD_LOCATION_PHOTO_FAILURE,
+   payload
+});
+
+export const updateLocation = (location: Location, navigation: any) => ({
    type: UPDATE_LOCATION,
    payload: {
       location,
@@ -89,3 +113,47 @@ export const setUserGPSLocation = (payload: UserGPSLocation) => ({
    payload
 });
 
+export const assignLocation = (location: Location, userId: string) => ({
+   type: ASSIGN_LOCATION,
+   payload: {
+      location,
+      userId
+   }
+});
+
+export const assignLocationSuccess = (location: string, userId: string) => ({
+   type: ASSIGN_LOCATION_SUCCESS,
+   payload: {
+      location,
+      userId
+   }
+});
+
+export const assignLocationFailure = (payload: string) => ({
+   type: ASSIGN_LOCATION_FAILURE,
+   payload
+});
+
+export const markLocationAsDone = (location: Location) => ({
+   type: MARK_LOCATION_AS_DONE,
+   payload: {
+      location
+   }
+});
+
+export const markLocationAsDoneSuccess = (location: string) => ({
+   type: MARK_LOCATION_AS_DONE_SUCCESS,
+   payload: {
+      location
+   }
+});
+
+export const markLocationAsDoneFailure = (payload: string) => ({
+   type: MARK_LOCATION_AS_DONE_FAILURE,
+   payload: {}
+});
+
+export const addNotificationToken = (payload: string) => ({
+   type: ADD_NOTIFICATION_TOKEN,
+   payload
+});

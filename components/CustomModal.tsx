@@ -4,14 +4,15 @@ import Modal from 'react-native-modal';
 import { useSelector, useDispatch } from "react-redux";
 import { toggleModal } from "../store/actions/modal"
 import Colors from "../constants";
-import { deleteLocation } from "../store/actions/locations";
+import { deleteLocation, assignLocation, markLocationAsDone } from "../store/actions/locations";
 import { LocationScreenStatus } from "../types";
 
 const CustomModal = ({ data, navigation, show }: any) => {
    const dispatch = useDispatch();
    const { userId } = useSelector((state) => state.auth);
 
-   console.log(2222, data, userId);
+   console.log(data);
+   const isAssignedToMe = data.assignedTo === userId;
  
    return (
       <Modal
@@ -50,19 +51,29 @@ const CustomModal = ({ data, navigation, show }: any) => {
                <Pressable
                   style={{...styles.modalButton,  ...(data.createdBy !== userId && { ...styles.firstButton }) }}
                   onPress={() => {
-                     dispatch(toggleModal());
+                     if (isAssignedToMe) {
+                        dispatch(assignLocation(data, ""));
+                     } else {
+                        dispatch(assignLocation(data, userId));
+                     }
                   }}
                >
-                  <Text style={styles.textStyle}>Assign to me</Text>
+                  {isAssignedToMe ? (
+                     <Text style={styles.textStyle}>Unassign</Text>
+                  ) : (
+                     <Text style={styles.textStyle}>Assign to me</Text>
+                  )}
                </Pressable>
-               <Pressable
-                  style={{ ...styles.modalButton, borderBottomLeftRadius: 10, borderBottomRightRadius: 10, borderBottomWidth: 0 }}
-                  onPress={() => {
-                     dispatch(toggleModal());
-                  }}
-               >
-                  <Text style={styles.textStyle}>Share</Text>
-               </Pressable>
+               {isAssignedToMe && (
+                  <Pressable
+                     style={{ ...styles.modalButton, borderBottomLeftRadius: 10, borderBottomRightRadius: 10, borderBottomWidth: 0 }}
+                     onPress={() => {
+                        dispatch(markLocationAsDone(data));
+                     }}
+                  >
+                     <Text style={{...styles.textStyle, color: Colors.green}}>Mark as done</Text>
+                  </Pressable>
+               )} 
                <Pressable
                   style={{ ...styles.modalButton, marginTop: 20, borderRadius: 10 }}
                   onPress={() => {

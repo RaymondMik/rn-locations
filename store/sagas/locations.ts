@@ -1,13 +1,63 @@
 import { all, put, takeLatest, select } from "redux-saga/effects";
+import * as Permissions from "expo-permissions";
+import * as LocationPicker from "expo-location";
+import firebase from "firebase";
+import firebaseConfig from "../../firebase";
+import { Location } from "../../types";
 import * as actions from "../actions/locations";
 import { toggleModal } from "../actions/modal"
-import { FIREBASE_URI } from "../../constants";
+import { FIREBASE_URI, FALLBACK_LOCATION } from "../../constants";
 
-import { Location } from "../../types";
+const uploadAsFile = async (uri: any, userId: string) => {
+   firebase.initializeApp(firebaseConfig);
+   const response = await fetch(uri);
+   const blob = await response.blob();
+ 
+   const metadata = {
+     contentType: "image/jpeg",
+   };
+ 
+   let name = new Date().getTime() + "-media.jpg"
+   const ref = firebase
+     .storage()
+     .ref()
+     .child(`${userId}/` + name)
+ 
+   const task = ref.put(blob, metadata);
+
+   return new Promise((resolve, reject) => {
+      task.on("state_changed", 
+         (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log("Upload is " + progress + "% done");
+         }, (err) => {
+            reject(err)
+         }, () => {
+            // gets the download url then sets the image from firebase as the value for the imgUrl key:
+            firebase
+               .storage()
+               .ref()
+               .child(`${userId}/` + name).getDownloadURL()
+               .then(fireBaseUrl => {
+                  resolve(fireBaseUrl)
+               })
+         })
+      });
+ }
 
 function* fetchLocationsSaga() {
    yield takeLatest(actions.GET_LOCATIONS, function* () {
       try {
+         const { status } = yield Permissions.askAsync(Permissions.LOCATION);
+
+         if (status !== "granted") {
+           console.error("Permission not granted");
+           yield put(actions.setUserGPSLocation(FALLBACK_LOCATION));
+         } else {
+            const location = yield LocationPicker.getCurrentPositionAsync({});
+            yield put(actions.setUserGPSLocation(location));
+         }
+      
          const response = yield fetch(`${FIREBASE_URI}/locations.json`);
          const resData = yield response.json();
          let locations: Location[] = [];
@@ -33,13 +83,24 @@ function* addLocationSaga() {
    yield takeLatest(actions.ADD_LOCATION, function* ({ payload }: any) {
       try {
          const { token } = yield select(state => state.auth);
-         const { location, navigation } = payload;
+         const { location, image, navigation } = payload;
+
+         // returns image URL if successful
+         const addImageResponse = yield uploadAsFile(image, location.createdBy);
+
+         console.log(345, addImageResponse);
+         
+         if (!addImageResponse) {
+            yield put(actions.addLocationPhotoFailure("photo error"))
+            return;
+         }
+
          const response = yield fetch(`${FIREBASE_URI}/locations.json?auth=${token}`, {
             method: "POST",
             headers: {
                "Content-Type": "application/json"
             },
-            body: JSON.stringify(location)
+            body: JSON.stringify({ ...location, latitude: "37.33233141", longitude:"-122.0312186", pictures: [addImageResponse] })
          });
 
          if (!response.ok) {
@@ -58,34 +119,92 @@ function* addLocationSaga() {
 }
 
 function* updateLocationSaga() {
-   yield takeLatest(actions.UPDATE_LOCATION, function* ({ payload }: any) {
+   yield takeLatest([
+      actions.UPDATE_LOCATION,
+      actions.ASSIGN_LOCATION,
+      actions.MARK_LOCATION_AS_DONE
+   ], function* ({ type, payload }: any) {
       try {
          const { token } = yield select(state => state.auth);
-         const { location: { _id, title, description }, navigation } = payload;
+         const { location: { _id, title, description, createdBy, notificationToken } } = payload;
+
+         let body: string = JSON.stringify({});
+
+         if (type === actions.UPDATE_LOCATION) {
+            body = JSON.stringify({
+               title,
+               description
+            })
+         } 
+         
+         if (type === actions.ASSIGN_LOCATION && payload.userId) {
+            body = JSON.stringify({
+               assignedTo: payload.userId
+            })
+         }
+
+         if (type === actions.MARK_LOCATION_AS_DONE) {
+            body = JSON.stringify({
+               isOpen: false,
+               assignedTo: ""
+            })
+         }
    
          const response = yield fetch(`${FIREBASE_URI}/locations/${_id}.json?auth=${token}`, {
             method: "PATCH",
             headers: {
                "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-               title,
-               description
-            })
+            body
          });
 
          if (!response.ok) {
             throw `A ${response.status} error occured`
          }
 
-         yield all([
-            put(actions.getLocations()),
-            put(actions.updateLocationSuccess()),
-         ]);
+         yield put(actions.getLocations());
 
-         navigation.goBack();
+         if (type === actions.UPDATE_LOCATION && payload.navigation) {
+            yield put(actions.updateLocationSuccess());
+            payload.navigation.goBack();
+         } 
+         
+         if (type === actions.ASSIGN_LOCATION) {
+            yield all([
+               put(actions.assignLocationSuccess(_id, payload.userId)),
+               put(toggleModal())
+            ]);
+         } 
+         
+         if (type === actions.MARK_LOCATION_AS_DONE) {
+            yield all([
+               put(actions.markLocationAsDoneSuccess(_id)),
+               put(toggleModal())
+            ]);
+
+            yield fetch("https://exp.host/--/api/v2/push/send", {
+               method: "POST",
+               headers: {
+                 "Accept": "application/json",
+                 "Accept-Encoding": "gzip, deflate",
+                 "Content-Type": "application/json"
+               },
+               body: JSON.stringify({
+                 to: notificationToken,
+                 title: "Location is done!",
+                 body: `Your location ${title} was marked as done by ${createdBy}`
+               })
+             });
+         }
+         
       } catch(error) {
-         yield put(actions.updateLocationFailure(error));
+         if (type === actions.UPDATE_LOCATION && payload.navigation) {
+            yield put(actions.updateLocationFailure(error));
+         } else if (type === actions.ASSIGN_LOCATION) {
+            yield put(actions.assignLocationFailure(error));
+         } else {
+            yield put(actions.markLocationAsDoneFailure(error));
+         }
       }
    });
 }
@@ -111,7 +230,7 @@ function* deleteLocationSaga() {
 
          navigation.navigate("Home");
       } catch(error) {
-         console.log(3344, error)
+         console.error(error)
          yield put(actions.deleteLocationFailure(error));
       }
    });

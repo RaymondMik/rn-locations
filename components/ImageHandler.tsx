@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { StyleSheet, View, Text, Alert, Pressable, Image } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as Permissions from "expo-permissions";
+import { MaterialIcons } from "@expo/vector-icons";
+import CustomButtom from "../components/CustomButton";
+import Colors from "../constants"; 
 
 interface Props {
    setImage: (imageUri: string) => void,
@@ -43,22 +46,17 @@ const ImageHandler = ({ setImage }: Props) => {
 
    return (
       <View>
-         <Pressable
-            onPress={() => { takeImageHandler() }}
-            style={styles.button}
-         >
-            <Text>Add Image</Text>
-         </Pressable>
+         <CustomButtom 
+            text={!pickedImage ? "Add image" : "Change image"}
+            handleOnPress={takeImageHandler}
+            icon={<MaterialIcons name="image" size={22} color={Colors.whiteText} />}
+         />
          <Image style={styles.imagePreview} source={{ uri: pickedImage }}/>
       </View>
    );
 };
 
 const styles = StyleSheet.create({
-   button: {
-      alignItems: "center",
-      marginBottom: 35
-   },
    imagePreview: {
       width: "100%",
       height: 250,

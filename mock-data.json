@@ -10,7 +10,7 @@
         ],
        "latitude": "43.89898989898",
        "longitude": "56.9090909090",
-       "isAssigned": false,
+       "assignedTo": "",
        "isOpen": true
    },
    {
@@ -26,7 +26,7 @@
         ],
        "latitude": "43.89898985566",
        "longitude": "56.9090907788",
-       "isAssigned": false,
+       "assignedTo": "",
        "isOpen": true
    },
    {
@@ -37,7 +37,7 @@
     "pictures": [],
     "latitude": "44.89898985222",
     "longitude": "57.9090907333",
-    "isAssigned": false,
+    "assignedTo": "",
     "isOpen": false
 }
 ]

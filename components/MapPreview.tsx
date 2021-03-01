@@ -1,18 +1,51 @@
-
-
-
 import React from "react";
-import { Image } from "react-native";
+import { StyleSheet } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+import { AntDesign } from '@expo/vector-icons'; 
+import Colors, { FALLBACK_LOCATION } from "../constants";
 
-const MapPreview = () => {
+interface Props {
+  location: {
+    id: string;
+    latitude: number;
+    longitude: number;
+    title: string;
+  };
+}
+
+const MapPreview = ({ location }:Props) => {
   return (
-    
-      <Image
-         style={{ width: 200, height: 200 }}
-         source={{ uri: "https://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=600x300&maptype=roadmap&markers=color:blue%7Clabel:S%7C40.702147,-74.015794&markers=color:green%7Clabel:G%7C40.711614,-74.012318&markers=color:red%7Clabel:C%7C40.718217,-73.998284&key=AIzaSyDwxebMEJ__w9FWSw3LOo7Pzym8rNL7wwo"}}
-      />
-
+    <MapView
+      style={styles.map}
+      mapType={"satellite"}
+      showsUserLocation
+      region={{
+        latitude: Number(location.latitude) || FALLBACK_LOCATION.coords.latitude,
+        longitude: Number(location.longitude) || FALLBACK_LOCATION.coords.longitude,
+        latitudeDelta: 0.0911,
+        longitudeDelta: 0.0421
+      }}
+      onPress={() => { console.log("HELLO MAP WORLD") }}
+  >
+      <Marker
+        key={location.id}
+        title={location.title}
+        coordinate={{
+            latitude: Number(location.latitude),
+            longitude: Number(location.longitude),
+        }}
+      >
+        <AntDesign name="enviroment" size={34} color={Colors.red} />
+      </Marker>
+  </MapView>
   );
 }
+
+const styles = StyleSheet.create({
+  map: {
+     flex: 1
+   }
+});
+
 
 export default MapPreview ;

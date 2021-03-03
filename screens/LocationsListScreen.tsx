@@ -1,19 +1,18 @@
 import React, { useEffect } from "react";
-import { StyleSheet, FlatList, Pressable, View, Text, ActivityIndicator } from 'react-native';
+import { StyleSheet, Pressable, View, Text, ActivityIndicator } from 'react-native';
 import { useDispatch, useSelector } from "react-redux";
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
-import { Location, Navigation } from "../types";
+import { Navigation } from "../types";
 import { getLocations } from "../store/actions/locations";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { authenticateLogout } from "../store/actions/auth";
-import { ASYNC_STORAGE_USER_DATA_KEY, FALLBACK_LOCATION } from "../constants";
-import { LocationScreenStatus } from "../types";
-import MapView, { Marker } from 'react-native-maps';
-import { AntDesign } from '@expo/vector-icons';
+import { FALLBACK_LOCATION } from "../constants";
+import { RootState, LocationScreenStatus } from "../types";
+import MapView, { Marker } from "react-native-maps";
+import { AntDesign } from "@expo/vector-icons";
+import { Ionicons } from '@expo/vector-icons'; 
 import Colors from "../constants";
 
 const LocationsListScreen = ({ navigation }: Navigation) => {
-   const { items, userGPSLocation, isLoading, hasError } = useSelector(state => state.locations);
+   const { items, userGPSLocation, isLoading, hasError } = useSelector((state: RootState) => state.locations);
    const dispatch = useDispatch();
 
    useEffect(() => {
@@ -27,11 +26,10 @@ const LocationsListScreen = ({ navigation }: Navigation) => {
    React.useLayoutEffect(() => {
       navigation.setOptions({
          headerLeft: () => (
-            <Pressable onPress={() => {
-               AsyncStorage.removeItem(ASYNC_STORAGE_USER_DATA_KEY);
-               dispatch(authenticateLogout());
-            }}>
-               <Text style={{ marginLeft: 18, fontWeight: "bold", color: Colors.whiteText }}>Log Out</Text>
+            <Pressable onPress={() => { 
+               navigation.toggleDrawer();
+             }}>
+               <Ionicons name="menu" size={32} color={Colors.whiteText} style={{ marginLeft: 18 }} />
             </Pressable>
          ),
          headerRight: () => (
@@ -42,7 +40,7 @@ const LocationsListScreen = ({ navigation }: Navigation) => {
                   status: LocationScreenStatus.Create
                })
              }}>
-               <MaterialCommunityIcons name="plus-thick" size={24} color={Colors.whiteText} style={{ marginRight: 18}} />
+               <MaterialCommunityIcons name="plus-thick" size={26} color={Colors.whiteText} style={{ marginRight: 18}} />
             </Pressable>
          ),
       });
@@ -55,8 +53,6 @@ const LocationsListScreen = ({ navigation }: Navigation) => {
          </View>
       );
    }
-
-   console.log(3333, userGPSLocation?.coords?.latitude, userGPSLocation?.coords?.longitude);
 
    return (
       <>

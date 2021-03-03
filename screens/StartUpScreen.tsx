@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ASYNC_STORAGE_USER_DATA_KEY } from "../constants";
 import { Navigation } from "../types";
-import { authenticateSuccess, authenticateLogout } from "../store/actions/auth";
+import { authenticateSuccess, authenticateLogout, setDidTryAutoLogin } from "../store/actions/auth";
 
 const StartUpScreen = ({ navigation }: Navigation) => {
    const dispatch = useDispatch();
@@ -14,7 +14,7 @@ const StartUpScreen = ({ navigation }: Navigation) => {
          const userData: any = await AsyncStorage.getItem(ASYNC_STORAGE_USER_DATA_KEY);
 
          if (!userData) {
-            navigation.navigate("Authenticate");
+            dispatch(setDidTryAutoLogin());
             return;
          }
 
@@ -23,7 +23,7 @@ const StartUpScreen = ({ navigation }: Navigation) => {
          const expirationDate = new Date(Number(expiryDate));
 
          if (expirationDate <= new Date() || !token || !userId) {
-            navigation.navigate("Authenticate");
+            dispatch(setDidTryAutoLogin());
             return;
           }
 

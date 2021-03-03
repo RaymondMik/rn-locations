@@ -7,7 +7,8 @@ const initialState: AuthState = {
    username: null,
    isLoading: false,
    hasError: null,
-   expiryDate: null
+   expiryDate: null,
+   didTryAutoLogin: false
 }
 
 const auth = (state = initialState, action: any) => {
@@ -16,7 +17,8 @@ const auth = (state = initialState, action: any) => {
          return {
             ...state,
             isLoading: true,
-            hasError: null
+            hasError: null,
+            
          }
       case actions.AUTHENTICATE_SUCCESS:
          return {
@@ -25,7 +27,9 @@ const auth = (state = initialState, action: any) => {
             token: action.payload.token,
             username: action.payload.username,
             isLoading: false,
-            hasError: null
+            hasError: null,
+            expiryDate: action.payload.expiryDate,
+            didTryAutoLogin: true,
          }
       case actions.AUTHENTICATE_FAILURE:
          return {
@@ -34,7 +38,13 @@ const auth = (state = initialState, action: any) => {
             token: null,
             username: null,
             isLoading: false,
-            hasError: action.payload
+            hasError: action.payload,
+            didTryAutoLogin: true,
+         }
+      case actions.SET_DID_TRY_AUTO_LOGIN:
+         return {
+            ...state,
+            didTryAutoLogin: true
          }
       case actions.AUTHENTICATE_LOGOUT:
          return initialState;

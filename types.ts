@@ -1,3 +1,9 @@
+export interface RootState {
+   locations: LocationsState;
+   auth: AuthState;
+   modal: ModalState;
+}
+
 export interface Location {
    _id: string;
    createdBy: string,
@@ -41,6 +47,7 @@ export interface AuthState {
    isLoading: boolean;
    hasError: string | null;
    expiryDate: number | null;
+   didTryAutoLogin: boolean;
 };
 
 export interface ModalState {
@@ -54,6 +61,7 @@ export interface Navigation {
       setOptions: (params: any) => void,
       setParams: (params: any) => void,
       addListener: (type: string, params: () => void) => void,
+      toggleDrawer: () => void
    }
 }
 

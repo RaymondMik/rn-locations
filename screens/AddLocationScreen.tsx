@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, Pressable, Text, View, TextInput, Alert, ActivityIndicator } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { Formik, Field } from "formik";
+import { Formik, Field, FormikProps } from "formik";
 import * as yup from "yup";
 import MapView from 'react-native-maps';
 import * as Permissions from "expo-permissions";
@@ -10,7 +10,7 @@ import { addLocation, addNotificationToken } from "../store/actions/locations";
 import ImageHandler from "../components/ImageHandler";
 import CustomInput from "../components/CustomInput";
 import Colors, { FALLBACK_LOCATION } from "../constants";
-import { UserGPSLocation } from "../types";
+import { RootState, UserGPSLocation } from "../types";
 import { registerForPushNotificationsAsync } from "../utils";
 
 const addLocationValidationSchema = yup.object().shape({
@@ -28,13 +28,12 @@ const AddLocationScreen = ({ navigation }: any) => {
    const [currentLocation, setCurrentLocation] = useState<UserGPSLocation | null>(null);
    const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
    const [locationHasErrored, setLocationHasErrored] = useState<boolean>(false);
-
    const [image, setImage] = useState<any>(null);
    const dispatch = useDispatch();
 
    const formRef: HTMLFormElement = useRef(null);
-   const { userId, hasError: authError } = useSelector(state => state.auth);
-   const { isLoading, hasPhotoError, notificationToken } = useSelector(state => state.locations);
+   const { userId, hasError: authError } = useSelector((state: RootState) => state.auth);
+   const { isLoading, hasPhotoError, notificationToken } = useSelector((state: RootState) => state.locations);
 
    useEffect(() => {
       (async () => {
@@ -49,7 +48,6 @@ const AddLocationScreen = ({ navigation }: any) => {
             const notificationToken = await registerForPushNotificationsAsync();
 
             if (notificationToken) {
-               console.log(222, notificationToken);
                dispatch(addNotificationToken(notificationToken));
             }
             
@@ -68,7 +66,8 @@ const AddLocationScreen = ({ navigation }: any) => {
     }, []);
 
    const saveInput = async() => {
-      if (formRef?.current?.isValid && image) { 
+      if (formRef?.current?.isValid) {
+         setAskToAddImage(false);
          dispatch(
             addLocation(
                {
@@ -101,7 +100,6 @@ const AddLocationScreen = ({ navigation }: any) => {
             </Pressable>
          ),
       });
-      
    }, [navigation, image]);
 
    return (
@@ -138,7 +136,7 @@ const AddLocationScreen = ({ navigation }: any) => {
             >
             {() => (
                <View style={styles.formContainer}>
-               <Field
+                  <Field
                      component={CustomInput}
                      label="Title"
                      name="title"

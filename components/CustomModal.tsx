@@ -5,11 +5,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { toggleModal } from "../store/actions/modal"
 import Colors from "../constants";
 import { deleteLocation, assignLocation, markLocationAsDone } from "../store/actions/locations";
-import { LocationScreenStatus } from "../types";
+import { RootState, LocationScreenStatus } from "../types";
 
 const CustomModal = ({ data, navigation, show }: any) => {
    const dispatch = useDispatch();
-   const { userId } = useSelector((state) => state.auth);
+   const { userId } = useSelector((state: RootState) => state.auth);
 
    console.log(data);
    const isAssignedToMe = data.assignedTo === userId;

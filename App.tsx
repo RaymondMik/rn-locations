@@ -6,17 +6,22 @@ import createSagaMiddleware from "redux-saga"
 import { Provider } from "react-redux";
 import { composeWithDevTools } from "redux-devtools-extension";
 import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { enableScreens } from "react-native-screens";
+import * as Notifications from "expo-notifications";
 
-import MainScreen from "./screens/MainScreen";
-import FilteredScreen from "./screens/FilteredScreen";
+import AppNavigator from "./navigation/AppNavigator";
 import locations from "./store/reducers/locations";
 import auth from "./store/reducers/auth";
 import modal from "./store/reducers/modal";
 import rootSaga from "./store/sagas";
 
-import { AntDesign } from '@expo/vector-icons'; 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -31,8 +36,6 @@ const store = createStore(
 sagaMiddleware.run(rootSaga)
 
 enableScreens();
-
-const Tabs = createBottomTabNavigator();
 
 const fetchFonts = () => (
   Font.loadAsync({
@@ -57,33 +60,7 @@ export default function App() {
   return (
     <Provider store={store}>
       <NavigationContainer>
-        <Tabs.Navigator
-          tabBarOptions={{
-            style: {
-              backgroundColor: "rgba(0,0,0,0.5)",
-              position: "absolute",
-              borderTopWidth: 0,
-              elevation: 0,
-            },
-          }}>
-          <Tabs.Screen
-            name="Home"
-            component={MainScreen}
-            options={{
-            tabBarIcon: ({ color, size }: any) => (
-              <AntDesign name="home" size={size} color={color} />
-            )
-          }}
-          />
-          <Tabs.Screen
-            name="Filtered"
-            component={FilteredScreen}
-            options={{
-            tabBarIcon: ({ color, size }: any) => (
-              <AntDesign name="star" size={size} color={color}/>
-            )}}
-          />
-        </Tabs.Navigator>
+        <AppNavigator />
       </NavigationContainer>
     </Provider>
   );

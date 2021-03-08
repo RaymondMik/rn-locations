@@ -1,4 +1,4 @@
-import { all, put, takeLatest, select } from "redux-saga/effects";
+import { all, call, put, takeLatest, select } from "redux-saga/effects";
 import * as Permissions from "expo-permissions";
 import * as LocationPicker from "expo-location";
 import firebase from "firebase";
@@ -87,21 +87,21 @@ function* addLocationSaga() {
 
          // returns image URL if successful
          const addImageResponse = yield uploadAsFile(image, location.createdBy);
-
-         console.log(345, addImageResponse);
-         
+  
          if (!addImageResponse) {
             yield put(actions.addLocationPhotoFailure("photo error"))
             return;
          }
 
-         const response = yield fetch(`${FIREBASE_URI}/locations.json?auth=${token}`, {
-            method: "POST",
-            headers: {
-               "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ ...location, latitude: "37.33233141", longitude:"-122.0312186", pictures: [addImageResponse] })
-         });
+         const response: any = yield fetch(`${FIREBASE_URI}/locations.json?auth=${token}`, 
+            {
+               method: "POST",
+               headers: {
+                  "Content-Type": "application/json"
+               },
+               body: JSON.stringify({ ...location, latitude: "37.33233141", longitude:"-122.0312186", pictures: [addImageResponse] })
+            }
+         );
 
          if (!response.ok) {
             throw `A ${response.status} error occured`

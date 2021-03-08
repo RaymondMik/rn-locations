@@ -25,7 +25,7 @@ const MapPreview = ({ location }:Props) => {
         latitudeDelta: 0.0911,
         longitudeDelta: 0.0421
       }}
-      onPress={() => { console.log("HELLO MAP WORLD") }}
+      onPress={() => { console.log("Use this to interact with the map") }}
   >
       <Marker
         key={location.id}

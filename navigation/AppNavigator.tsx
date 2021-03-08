@@ -1,5 +1,5 @@
 import React from "react";
-import { Platform, SafeAreaView, Button, View } from "react-native";
+import { Platform, Pressable, SafeAreaView, Button, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -8,7 +8,7 @@ import {
    DrawerItemList
  } from "@react-navigation/drawer";
 import FilteredScreen from "../screens/FilteredScreen";
-import { AntDesign } from "@expo/vector-icons"; 
+import { AntDesign, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons"; 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import EditLocationScreen from "../screens/EditLocationScreen";
 import LocationsListScreen from "../screens/LocationsListScreen";
@@ -18,13 +18,36 @@ import AuthScreen from "../screens/AuthScreen";
 import StartUpScreen from "../screens/StartUpScreen";
 import { authenticateLogout } from "../store/actions/auth";
 import Colors, { ASYNC_STORAGE_USER_DATA_KEY } from "../constants";
-import { RootState } from "../types";
+import { RootState, Navigation, LocationScreenStatus } from "../types";
 
 const Tabs = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const DrawerNavigator = createDrawerNavigator();
 
-const TabsNavigator = () => {
+const TabsNavigator = ({ navigation }: Navigation) => {
+   React.useLayoutEffect(() => {
+      navigation.setOptions({
+         headerLeft: () => (
+            <Pressable onPress={() => { 
+               navigation.toggleDrawer();
+             }}>
+               <Ionicons name="menu" size={32} color={Colors.whiteText} style={{ marginLeft: 18 }} />
+            </Pressable>
+         ),
+         headerRight: () => (
+            <Pressable onPress={() => { 
+               navigation.navigate("Add", {
+                  title: "Add location",
+                  data: {},
+                  status: LocationScreenStatus.Create
+               })
+             }}>
+               <MaterialCommunityIcons name="plus-thick" size={26} color={Colors.whiteText} style={{ marginRight: 18}} />
+            </Pressable>
+         ),
+      });
+    }, [navigation]);
+
    return (
       <Tabs.Navigator
          tabBarOptions={{
@@ -67,6 +90,7 @@ const LocationsNavigator = () => {
                   component={TabsNavigator}
                   options={{
                      title: "Locations",
+             
                      headerTransparent: true,
                      headerStyle: {
                         backgroundColor: Platform.OS === "android" ? Colors.headerColor : "rgba(0,0,0,0.8)",

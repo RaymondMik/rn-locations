@@ -1,14 +1,12 @@
 import React, { useEffect } from "react";
-import { StyleSheet, Pressable, View, Text, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, ActivityIndicator } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import { Navigation } from "../types";
 import { getLocations } from "../store/actions/locations";
 import { FALLBACK_LOCATION } from "../constants";
 import { RootState, LocationScreenStatus } from "../types";
 import MapView, { Marker } from "react-native-maps";
 import { AntDesign } from "@expo/vector-icons";
-import { Ionicons } from '@expo/vector-icons'; 
 import Colors from "../constants";
 
 const LocationsListScreen = ({ navigation }: Navigation) => {
@@ -22,29 +20,6 @@ const LocationsListScreen = ({ navigation }: Navigation) => {
       
       return locations;
    }, [navigation])
-
-   React.useLayoutEffect(() => {
-      navigation.setOptions({
-         headerLeft: () => (
-            <Pressable onPress={() => { 
-               navigation.toggleDrawer();
-             }}>
-               <Ionicons name="menu" size={32} color={Colors.whiteText} style={{ marginLeft: 18 }} />
-            </Pressable>
-         ),
-         headerRight: () => (
-            <Pressable onPress={() => { 
-               navigation.navigate("Add", {
-                  title: "Add location",
-                  data: {},
-                  status: LocationScreenStatus.Create
-               })
-             }}>
-               <MaterialCommunityIcons name="plus-thick" size={26} color={Colors.whiteText} style={{ marginRight: 18}} />
-            </Pressable>
-         ),
-      });
-    }, [navigation]);
 
    if (hasError) {
       return (

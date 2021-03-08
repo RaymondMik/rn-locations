@@ -11,7 +11,6 @@ const CustomModal = ({ data, navigation, show }: any) => {
    const dispatch = useDispatch();
    const { userId } = useSelector((state: RootState) => state.auth);
 
-   console.log(data);
    const isAssignedToMe = data.assignedTo === userId;
  
    return (

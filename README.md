@@ -4,6 +4,6 @@ This project was bootstrapped with Expo, and it uses Firebase as a backend. You 
 Also, don't forget to update name, slug, `ios.bundleIdentifier` and `android.package` in the `./app.json` file.
 Then run:
 
-#### `npm install`
+#### `yarn`
 
-#### `npm start`
+#### `yarn start`

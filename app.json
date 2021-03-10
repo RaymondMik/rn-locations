@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Trash Busters",
+    "name": "RN Locations",
     "slug": "rn-locations",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,12 +17,12 @@
       "**/*"
     ],
     "ios": {
-      "bundleIdentifier": "dev.emerald-river.trash-busters",
+      "bundleIdentifier": "dev.emerald-river.rn-locations",
       "buildNumber": "0.1.0",
       "supportsTablet": true
     },
     "android": {
-      "package": "dev.emerald_river.trash_busters",
+      "package": "dev.emerald_river.rn_locations",
       "versionCode": 0,
       "adaptiveIcon": {
         "foregroundImage": "./assets/locations_adaptive.png",

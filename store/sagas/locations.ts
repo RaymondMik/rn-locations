@@ -6,13 +6,15 @@ import firebaseConfig from "../../firebase";
 import { Location } from "../../types";
 import * as actions from "../actions/locations";
 import { toggleModal } from "../actions/modal"
-import { FIREBASE_URI, FALLBACK_LOCATION } from "../../constants";
+import { FALLBACK_LOCATION } from "../../constants";
+import { FIREBASE_URI } from "../../secrets";
+import { fetchData } from "../../services";
 
-const uploadAsFile = async (uri: any, userId: string) => {
+const uploadAsFile = async(uri: string, userId: string) => {
    firebase.initializeApp(firebaseConfig);
    const response = await fetch(uri);
    const blob = await response.blob();
- 
+
    const metadata = {
      contentType: "image/jpeg",
    };
@@ -24,7 +26,6 @@ const uploadAsFile = async (uri: any, userId: string) => {
      .child(`${userId}/` + name)
  
    const task = ref.put(blob, metadata);
-
    return new Promise((resolve, reject) => {
       task.on("state_changed", 
          (snapshot) => {
@@ -54,12 +55,15 @@ function* fetchLocationsSaga() {
            console.error("Permission not granted");
            yield put(actions.setUserGPSLocation(FALLBACK_LOCATION));
          } else {
-            const location = yield LocationPicker.getCurrentPositionAsync({});
+            // @ts-ignore
+            const location: any = yield LocationPicker.getCurrentPositionAsync({});
             yield put(actions.setUserGPSLocation(location));
          }
-      
-         const response = yield fetch(`${FIREBASE_URI}/locations.json`);
-         const resData = yield response.json();
+         // @ts-ignore
+         const response: any = yield call(fetchData, { endpoint: `${FIREBASE_URI}/locations.json` });
+         // @ts-ignore
+         const resData: any = yield response.json();
+     
          let locations: Location[] = [];
 
          for (let key in resData) {
@@ -85,7 +89,8 @@ function* addLocationSaga() {
          const { token } = yield select(state => state.auth);
          const { location, image, navigation } = payload;
 
-         // returns image URL if successful
+         // returns image URL if successfull
+         // @ts-ignore
          const addImageResponse = yield uploadAsFile(image, location.createdBy);
   
          if (!addImageResponse) {
@@ -93,15 +98,17 @@ function* addLocationSaga() {
             return;
          }
 
-         const response: any = yield fetch(`${FIREBASE_URI}/locations.json?auth=${token}`, 
-            {
+         // @ts-ignore
+         const response = yield call(fetchData, {
+            endpoint: `${FIREBASE_URI}/locations.json?auth=${token}`,
+            params: {
                method: "POST",
                headers: {
                   "Content-Type": "application/json"
                },
-               body: JSON.stringify({ ...location, latitude: "37.33233141", longitude:"-122.0312186", pictures: [addImageResponse] })
+               body: JSON.stringify({ ...location, pictures: [addImageResponse] })
             }
-         );
+         });
 
          if (!response.ok) {
             throw `A ${response.status} error occured`
@@ -149,13 +156,17 @@ function* updateLocationSaga() {
                assignedTo: ""
             })
          }
-   
-         const response = yield fetch(`${FIREBASE_URI}/locations/${_id}.json?auth=${token}`, {
-            method: "PATCH",
-            headers: {
-               "Content-Type": "application/json"
-            },
-            body
+
+         // @ts-ignore
+         const response = yield call(fetchData, {
+            endpoint: `${FIREBASE_URI}/locations/${_id}.json?auth=${token}`,
+            params: {
+               method: "PATCH",
+               headers: {
+                  "Content-Type": "application/json"
+               },
+               body
+            }
          });
 
          if (!response.ok) {
@@ -182,19 +193,23 @@ function* updateLocationSaga() {
                put(toggleModal())
             ]);
 
-            yield fetch("https://exp.host/--/api/v2/push/send", {
-               method: "POST",
-               headers: {
-                 "Accept": "application/json",
-                 "Accept-Encoding": "gzip, deflate",
-                 "Content-Type": "application/json"
-               },
-               body: JSON.stringify({
-                 to: notificationToken,
-                 title: "Location is done!",
-                 body: `Your location ${title} was marked as done by ${createdBy}`
-               })
-             });
+            // @ts-ignore
+            yield call(fetchData, {
+               endpoint: "https://exp.host/--/api/v2/push/send",
+               payload: {
+                  method: "POST",
+                  headers: {
+                     "Accept": "application/json",
+                     "Accept-Encoding": "gzip, deflate",
+                     "Content-Type": "application/json"
+                     },
+                     body: JSON.stringify({
+                     to: notificationToken,
+                     title: "Location is done!",
+                     body: `Your location ${title} was marked as done by ${createdBy}`
+                  })
+               }
+            })
          }
          
       } catch(error) {
@@ -214,8 +229,12 @@ function* deleteLocationSaga() {
       try {
          const { token } = yield select(state => state.auth);
          const { location, navigation } = payload;
-         const response = yield fetch(`${FIREBASE_URI}/locations/${location}.json?auth=${token}`, {
-            method: "DELETE",
+         // @ts-ignore
+         const response = yield call(fetchData, {
+            endpoint: `${FIREBASE_URI}/locations/${location}.json?auth=${token}`,
+            params: {
+               method: "DELETE"
+            }
          });
 
          if (!response.ok) {
@@ -223,9 +242,9 @@ function* deleteLocationSaga() {
          }
 
          yield all([
-            put(actions.getLocations()),
-            put(actions.deleteLocationSuccess()),
             put(toggleModal()),
+            put(actions.getLocations()),
+            put(actions.deleteLocationSuccess())
          ]);
 
          navigation.navigate("Home");

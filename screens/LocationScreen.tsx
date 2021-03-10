@@ -7,14 +7,15 @@ import MapView, { Marker } from 'react-native-maps';
 import { Navigation, LocationScreenStatus } from "../types";
 import CustomModal from "../components/CustomModal";
 import Colors, { FALLBACK_LOCATION } from "../constants";
+import { RootState } from "../types";
 
 const LocationScreen = ({ route, navigation }: Navigation) => {
    const { data, status } = route.params;
-   const modal = useSelector(state => state.modal);
-   const { locations } = useSelector(state => state);
-   const { hasError } = useSelector(state => state.auth);
+   const modal = useSelector((state: RootState) => state.modal);
+   const { locations } = useSelector((state: RootState) => state);
+   const { hasError } = useSelector((state: RootState) => state.auth);
 
-   const { items, userGPSLocation, isLoading } = locations;
+   //const { items, userGPSLocation, isLoading } = locations;
 
    const selectedLocation = locations.items.find((location: any) => location._id === data._id);
 
@@ -41,26 +42,28 @@ const LocationScreen = ({ route, navigation }: Navigation) => {
                mapType={"satellite"}
                showsUserLocation
                region={{
-                  latitude: Number(selectedLocation.latitude) || FALLBACK_LOCATION.coords.latitude,
-                  longitude: Number(selectedLocation.longitude) || FALLBACK_LOCATION.coords.longitude,
+                  latitude: Number(selectedLocation?.latitude) || FALLBACK_LOCATION.coords.latitude,
+                  longitude: Number(selectedLocation?.longitude) || FALLBACK_LOCATION.coords.longitude,
                   latitudeDelta: 0.0911,
                   longitudeDelta: 0.0421
                }}
                onPress={() => { console.log("Use this to interact with the map") }}
             >
-               <Marker
-                  key={selectedLocation._id}
-                  title={selectedLocation.title}
-                  coordinate={{
-                     latitude: Number(selectedLocation.latitude),
-                     longitude: Number(selectedLocation.longitude),
-                  }}
-               >
-                  <AntDesign name="enviroment" size={34} color={Colors.red} />
-               </Marker>
+               {selectedLocation && (
+                  <Marker
+                     key={selectedLocation._id}
+                     title={selectedLocation.title}
+                     coordinate={{
+                        latitude: Number(selectedLocation.latitude),
+                        longitude: Number(selectedLocation.longitude),
+                     }}
+                  >
+                     <AntDesign name="enviroment" size={34} color={Colors.red} />
+                  </Marker>
+               )}
             </MapView>
             </View>
-            <CustomModal show={modal.show} data={selectedLocation} navigation={navigation}/>
+            {selectedLocation && <CustomModal show={modal.show} data={selectedLocation} navigation={navigation}/>}
             <View style={styles.statusContainer}>
                <View style={styles.status}>
                   {selectedLocation?.isOpen ? (
@@ -77,7 +80,7 @@ const LocationScreen = ({ route, navigation }: Navigation) => {
                </View>
                {selectedLocation?.isOpen && (
                   <View style={styles.status}>
-                     {selectedLocation?.assignedTo.length && selectedLocation?.isOpen ? (
+                     {selectedLocation?.assignedTo?.length && selectedLocation?.isOpen ? (
                         <>
                            <Text style={styles.statusLabel}>Assigned</Text>
                            <MaterialCommunityIcons name="progress-wrench" size={40} color={Colors.green} />

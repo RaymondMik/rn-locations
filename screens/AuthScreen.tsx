@@ -6,7 +6,7 @@ import * as yup from "yup";
 import { authenticate } from "../store/actions/auth";
 import Colors from "../constants";
 import CustomInput from "../components/CustomInput";
-import { AuthStates } from "../types";
+import { AuthStates, RootState } from "../types";
 
 const signUpValidationSchema = yup.object().shape({
    username: yup
@@ -37,7 +37,7 @@ const signInValidationSchema = yup.object().shape({
 const AuthScreen = () => {
    const [authState, setAuthState] = useState<AuthStates>(AuthStates.SignUp);
    const dispatch = useDispatch();
-   const { isLoading, hasError } = useSelector(state => state.auth);
+   const { isLoading, hasError } = useSelector((state: RootState) => state.auth);
 
    return (
       <View style={styles.formContainer}>
@@ -72,9 +72,10 @@ const AuthScreen = () => {
                 />
                <Field
                   component={CustomInput}
-                  label={"Password"}
+                  label="Password"
                   name="password"
                   placeholder="At least 8 characters long"
+                  secureTextEntry
                 />
                <Pressable 
                   style={styles.button}

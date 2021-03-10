@@ -41,20 +41,20 @@ const LocationsListScreen = ({ navigation }: Navigation) => {
             mapType="satellite"
             showsUserLocation
             region={{
-               latitude: userGPSLocation?.coords?.latitude || FALLBACK_LOCATION.coords.latitude,
-               longitude: userGPSLocation?.coords?.longitude || FALLBACK_LOCATION.coords.longitude,
+               latitude: Number(userGPSLocation?.coords?.latitude) || FALLBACK_LOCATION.coords.latitude,
+               longitude: Number(userGPSLocation?.coords?.longitude) || FALLBACK_LOCATION.coords.longitude,
                latitudeDelta: 0.0911,
                longitudeDelta: 0.0421
             }}
-            onPress={() => { console.log("HELLO MAP WORLD") }}
+            onPress={() => { console.log("Use this to interact with the map") }}
          >
             {items.map((item: any) => (
                <Marker
                   key={item._id}
                   title={item.title}
                   coordinate={{
-                     latitude: Number(item.latitude),
-                     longitude: Number(item.longitude),
+                     latitude: Number(item.latitude) || FALLBACK_LOCATION.coords.latitude,
+                     longitude: Number(item.longitude) || FALLBACK_LOCATION.coords.longitude,
                   }}
                   onPress={() => { 
                      navigation.navigate("Location", {
@@ -75,8 +75,7 @@ const LocationsListScreen = ({ navigation }: Navigation) => {
 const styles = StyleSheet.create({
    centeredView: {
       position: "absolute",
-      elevation: 0,
-      
+      elevation: 0
    },
    map: {
       flex: 1

@@ -1,13 +1,27 @@
 import React, { useRef } from "react";
 import { StyleSheet, Pressable, Text, View, TextInput, Image, Alert } from 'react-native';
 import { useSelector, useDispatch } from "react-redux";
-import { Formik } from "formik"; 
+import { Formik, Field } from "formik";
+import * as yup from "yup"; 
 import { updateLocation } from "../store/actions/locations";
+import CustomInput from "../components/CustomInput";
+import { RootState } from "../types";
+
+const editLocationValidationSchema = yup.object().shape({
+   title: yup
+      .string()
+      .min(4, ({ min }) => `Title must be at least ${min} characters`)
+      .required("Title is Required"),
+   description: yup
+      .string()
+      .min(4, ({ min }) => `Description must be at least ${min} characters`)
+      .required("Password is required"),
+})
 
 const EditLocationScreen = ({ route, navigation }: any) => {
    const formRef: HTMLFormElement = useRef(null);
    const dispatch = useDispatch();
-   const { hasError } = useSelector(state => state.auth);
+   const { hasError } = useSelector((state: RootState) => state.auth);
    const { data } = route.params;
 
    const saveInput = () => {
@@ -47,24 +61,21 @@ const EditLocationScreen = ({ route, navigation }: any) => {
       <View style={styles.container}>
          {hasError && Alert.alert("An Error Occurred", hasError, [{ text: 'Okay' }] )}
          <Formik
+            validationSchema={editLocationValidationSchema}
             initialValues={{ title: data.title || "", description: data.description || "" }}
             innerRef={formRef}
          >
-         {({ handleChange, handleBlur, handleSubmit, values }) => (
+         {() => (
             <View style={styles.formContainer}>
-               <Text>Title</Text>
-               <TextInput
-                  style={styles.textInput}
-                  onChangeText={handleChange("title")}
-                  onBlur={handleBlur("title")}
-                  value={values.title}
+               <Field
+                  component={CustomInput}
+                  label="Title"
+                  name="title"
                />
-               <Text>Description</Text>
-               <TextInput
-                  style={styles.textInput}
-                  onChangeText={handleChange("description")}
-                  onBlur={handleBlur("description")}
-                  value={values.description}
+               <Field
+                  component={CustomInput}
+                  label="Description"
+                  name="description"
                />
             </View>
          )}

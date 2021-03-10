@@ -74,7 +74,7 @@ export const addLocationPhotoFailure = (payload: string) => ({
    payload
 });
 
-export const updateLocation = (location: Location, navigation: any) => ({
+export const updateLocation = (location: any, navigation: any) => ({
    type: UPDATE_LOCATION,
    payload: {
       location,

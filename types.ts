@@ -41,7 +41,7 @@ export interface LocationsState {
 };
 
 export interface AuthState {
-   userId: string | null;
+   userId: string;
    token: string | null;
    username: string | null;
    isLoading: boolean;

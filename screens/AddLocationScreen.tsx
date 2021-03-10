@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, Pressable, Text, View, TextInput, Alert, ActivityIndicator } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import { Formik, Field, FormikProps } from "formik";
+import { Formik, Field } from "formik";
 import * as yup from "yup";
 import MapView from 'react-native-maps';
 import * as Permissions from "expo-permissions";
@@ -29,6 +29,7 @@ const AddLocationScreen = ({ navigation }: any) => {
    const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
    const [locationHasErrored, setLocationHasErrored] = useState<boolean>(false);
    const [image, setImage] = useState<any>(null);
+   const [hasNoImage, setHasNoImage] = useState<boolean>(false);
    const dispatch = useDispatch();
 
    const formRef: HTMLFormElement = useRef(null);
@@ -66,8 +67,16 @@ const AddLocationScreen = ({ navigation }: any) => {
     }, []);
 
    const saveInput = async() => {
+      if (!image) {
+         setHasNoImage(true);
+         setTimeout(() => {
+            setHasNoImage(false);
+         }, 3000);
+
+         return; 
+      }
+
       if (formRef?.current?.isValid) {
-         setAskToAddImage(false);
          dispatch(
             addLocation(
                {
@@ -105,6 +114,11 @@ const AddLocationScreen = ({ navigation }: any) => {
    return (
       <View style={styles.container}>
          {authError && Alert.alert("An Error Occurred", authError, [{ text: 'Okay' }] )}
+         {hasNoImage && Alert.alert("Please add an image", "", [{ text: 'Okay' }] )}
+         {locationHasErrored && !currentLocation && Alert.alert("NO LOCATION", "", [{ 
+            text: 'Okay',
+            onPress: () => {navigation.navigate("Home")} 
+         }])}
          {hasPhotoError && Alert.alert("An error occurred while uploading your photo", hasPhotoError, [{ text: 'Okay' }] )}
          <View style={styles.map}>
             {locationHasErrored ? (
@@ -126,7 +140,7 @@ const AddLocationScreen = ({ navigation }: any) => {
                />
             ))}
          </View>
-         {isLoading ? (
+         {isLoading && formRef?.current?.isValid && image ? (
             <ActivityIndicator size="small" color="black" style={{ marginTop: 20 }} />
          ) : (
             <Formik

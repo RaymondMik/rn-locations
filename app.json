@@ -4,9 +4,9 @@
     "slug": "rn-locations",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/locations_icon.png",
+    "icon": "./assets/locations_adaptive.png",
     "splash": {
-      "image": "./assets/locations_splash_icon.png",
+      "image": "./assets/locations_adaptive.png",
       "resizeMode": "contain",
       "backgroundColor": "#171717"
     },
